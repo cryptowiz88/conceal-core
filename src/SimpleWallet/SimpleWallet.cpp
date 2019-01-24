@@ -1375,7 +1375,7 @@ bool simple_wallet::listTransfers(const std::vector<std::string>& args) {
   bool haveTransfers = false;
   bool haveBlockHeight = false;
   std::string blockHeightString = ""; 
-  uint_32 blockHeight;
+  int blockHeight;
   WalletLegacyTransaction txInfo;
 
 
