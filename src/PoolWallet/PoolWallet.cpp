@@ -1366,7 +1366,7 @@ bool pool_wallet::listTransfers(const std::vector<std::string>& args) {
   bool haveTransfers = false;
   bool haveBlockHeight = false;
   std::string blockHeightString = ""; 
-  uint32_t blockHeight;
+  int blockHeight;
   WalletLegacyTransaction txInfo;
 
 
