@@ -1380,8 +1380,7 @@ bool simple_wallet::listTransfers(const std::vector<std::string>& args) {
 
 
   /* get block height from arguments */
-  if (args.empty()) 
-  {
+  if (args.empty()) {
     haveBlockHeight = false;
   } else {
     blockHeightString = args[0];
@@ -1390,8 +1389,7 @@ bool simple_wallet::listTransfers(const std::vector<std::string>& args) {
   }
 
   size_t transactionsCount = m_wallet->getTransactionCount();
-  for (size_t trantransactionNumber = 0; trantransactionNumber < transactionsCount; ++trantransactionNumber) 
-  {
+  for (size_t trantransactionNumber = 0; trantransactionNumber < transactionsCount; ++trantransactionNumber) {
     
     m_wallet->getTransaction(trantransactionNumber, txInfo);
     if (txInfo.state != WalletLegacyTransactionState::Active || txInfo.blockHeight == WALLET_LEGACY_UNCONFIRMED_TRANSACTION_HEIGHT) {
@@ -1403,7 +1401,7 @@ bool simple_wallet::listTransfers(const std::vector<std::string>& args) {
       haveTransfers = true;
     }
 
-    if (haveBlockHeight = false) {
+    if (haveBlockHeight == false) {
       printListTransfersItem(logger, txInfo, *m_wallet, m_currency);
     } else {
       if (txInfo.blockHeight >= blockHeight) {
