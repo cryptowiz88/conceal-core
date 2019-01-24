@@ -208,10 +208,10 @@ bool parseArguments(LoggerRef& logger, const std::vector<std::string> &args)
               return false;
             }
 
-            if (fee < CryptoNote::parameters::MINIMUM_FEE_V1) 
+            if (fee < m_currency.minimumFee()) 
             {
 
-              logger(ERROR, BRIGHT_RED) << "Fee value is less than minimum: " << CryptoNote::parameters::MINIMUM_FEE_V1;
+              logger(ERROR, BRIGHT_RED) << "Fee value is less than minimum: " << m_currency.minimumFee();
               return false;
             }
           } else if (arg == "-m") 
@@ -647,6 +647,8 @@ simple_wallet::simple_wallet(System::Dispatcher& dispatcher, const CryptoNote::C
   m_refresh_progress_reporter(*this),
   m_initResultPromise(nullptr),
   m_walletSynchronized(false) {
+//  m_consoleHandler.setHandler("start_mining", boost::bind(&simple_wallet::start_mining, this, _1), "start_mining [<number_of_threads>] - Start mining in daemon");
+//  m_consoleHandler.setHandler("stop_mining", boost::bind(&simple_wallet::stop_mining, this, _1), "Stop mining in daemon");
   m_consoleHandler.setHandler("create_integrated", boost::bind(&simple_wallet::create_integrated, this, _1), "create_integrated <payment_id> - Create an integrated address with a payment ID");
   m_consoleHandler.setHandler("export_keys", boost::bind(&simple_wallet::export_keys, this, _1), "Show the secret keys of the current wallet");
   m_consoleHandler.setHandler("balance", boost::bind(&simple_wallet::show_balance, this, _1), "Show current wallet balance");
@@ -668,7 +670,6 @@ simple_wallet::simple_wallet(System::Dispatcher& dispatcher, const CryptoNote::C
   m_consoleHandler.setHandler("help", boost::bind(&simple_wallet::help, this, _1), "Show this help");
   m_consoleHandler.setHandler("exit", boost::bind(&simple_wallet::exit, this, _1), "Close wallet");
 }
-
 //----------------------------------------------------------------------------------------------------
 bool simple_wallet::set_log(const std::vector<std::string> &args) {
   if (args.size() != 1) {
@@ -1372,7 +1373,8 @@ bool simple_wallet::listTransfers(const std::vector<std::string>& args) {
 
 
   /* get block height from arguments */
-  if (args.empty()) {
+  if (args.empty()) 
+  {
     haveBlockHeight = false;
   } else {
     blockHeightString = args[0];
@@ -1381,7 +1383,8 @@ bool simple_wallet::listTransfers(const std::vector<std::string>& args) {
   }
 
   size_t transactionsCount = m_wallet->getTransactionCount();
-  for (size_t trantransactionNumber = 0; trantransactionNumber < transactionsCount; ++trantransactionNumber) {
+  for (size_t trantransactionNumber = 0; trantransactionNumber < transactionsCount; ++trantransactionNumber) 
+  {
     
     m_wallet->getTransaction(trantransactionNumber, txInfo);
     if (txInfo.state != WalletLegacyTransactionState::Active || txInfo.blockHeight == WALLET_LEGACY_UNCONFIRMED_TRANSACTION_HEIGHT) {
@@ -1393,7 +1396,7 @@ bool simple_wallet::listTransfers(const std::vector<std::string>& args) {
       haveTransfers = true;
     }
 
-    if (haveBlockHeight == false) {
+    if (haveBlockHeight = false) {
       printListTransfersItem(logger, txInfo, *m_wallet, m_currency);
     } else {
       if (txInfo.blockHeight >= blockHeight) {
@@ -1688,8 +1691,8 @@ bool simple_wallet::transfer(const std::vector<std::string> &args) {
     cmd.fake_outs_count = 4;
 
     /* force minimum fee */
-    if (cmd.fee < CryptoNote::parameters::MINIMUM_FEE_V1) {
-      cmd.fee = CryptoNote::parameters::MINIMUM_FEE_V1;
+    if (cmd.fee < 10) {
+      cmd.fee = 10;
     }
 
     Crypto::SecretKey transactionSK;
