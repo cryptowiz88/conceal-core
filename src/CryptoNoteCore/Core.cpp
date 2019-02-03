@@ -496,6 +496,16 @@ void core::on_synchronized() {
   m_miner->on_synchronized();
 }
 
+std::tuple<bool, Transaction> core::getPoolTransaction(const Crypto::Hash& transactionHash) const {
+  if (m_mempool.check_if_transaction_present(transactionHash)) {
+    return {true, m_mempool.get_transaction(transactionHash)};
+  }
+  else {
+    Transaction emptyTransaction;
+    return {false, emptyTransaction};
+  }
+}
+
 bool core::getPoolChanges(const Crypto::Hash& tailBlockId, const std::vector<Crypto::Hash>& knownTxsIds,
                           std::vector<Transaction>& addedTxs, std::vector<Crypto::Hash>& deletedTxsIds) {
 

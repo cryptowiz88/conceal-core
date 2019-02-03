@@ -268,6 +268,33 @@ namespace CryptoNote {
       txs.push_back(tx_vt.tx);
     }
   }
+  bool tx_memory_pool::check_if_transaction_present(const Crypto::Hash& hash) const {
+    std::list<Transaction> txs;
+    get_transactions(txs);
+    std::vector<Crypto::Hash> txHashes;
+    for(auto tx : txs)
+    {
+      txHashes.push_back(getObjectHash(tx));
+    }
+    std::vector<Crypto::Hash>::iterator it;
+    it = std::find(txHashes.begin(), txHashes.end(), hash);
+    return it != txHashes.end();
+  }
+  //---------------------------------------------------------------------------------
+  Transaction tx_memory_pool::get_transaction(const Crypto::Hash& hash) const {
+    std::list<Transaction> txs;
+    get_transactions(txs);
+    std::vector<Crypto::Hash> txHashes;
+    for(auto tx : txs)
+    {
+      txHashes.push_back(getObjectHash(tx));
+    }
+    std::vector<Crypto::Hash>::iterator it = std::find(txHashes.begin(), txHashes.end(), hash);
+    assert(it != txHashes.end());
+    std::vector<Transaction> txsVector = { txs.begin(), txs.end() };
+    int pos = std::distance(txHashes.begin(), it) + 1;
+    return txsVector[pos];
+  }
   //---------------------------------------------------------------------------------
   void tx_memory_pool::get_difference(const std::vector<Crypto::Hash>& known_tx_ids, std::vector<Crypto::Hash>& new_tx_ids, std::vector<Crypto::Hash>& deleted_tx_ids) const {
     std::lock_guard<std::recursive_mutex> lock(m_transactions_lock);

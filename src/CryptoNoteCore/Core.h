@@ -132,6 +132,7 @@ namespace CryptoNote {
      void print_blockchain_index();
      std::string print_pool(bool short_format);
      void print_blockchain_outs(const std::string& file);
+     virtual std::tuple<bool, Transaction> getPoolTransaction(const Crypto::Hash& transactionHash) const override;
      virtual bool getPoolChanges(const Crypto::Hash& tailBlockId, const std::vector<Crypto::Hash>& knownTxsIds,
                                  std::vector<Transaction>& addedTxs, std::vector<Crypto::Hash>& deletedTxsIds) override;
      virtual bool getPoolChangesLite(const Crypto::Hash& tailBlockId, const std::vector<Crypto::Hash>& knownTxsIds,
