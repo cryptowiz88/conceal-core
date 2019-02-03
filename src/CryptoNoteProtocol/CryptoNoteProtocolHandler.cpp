@@ -212,6 +212,7 @@ int CryptoNoteProtocolHandler::handleCommand(bool is_notify, int command, const 
     HANDLE_NOTIFY(NOTIFY_REQUEST_CHAIN, &CryptoNoteProtocolHandler::handle_request_chain)
     HANDLE_NOTIFY(NOTIFY_RESPONSE_CHAIN_ENTRY, &CryptoNoteProtocolHandler::handle_response_chain_entry)
     HANDLE_NOTIFY(NOTIFY_REQUEST_TX_POOL, &CryptoNoteProtocolHandler::handleRequestTxPool)
+    HANDLE_NOTIFY(NOTIFY_NEW_LITE_BLOCK, &CryptoNoteProtocolHandler::handle_notify_new_lite_block)
 
   default:
     handled = false;
@@ -609,6 +610,40 @@ int CryptoNoteProtocolHandler::handleRequestTxPool(int command, NOTIFY_REQUEST_T
   return 1;
 }
 
+int CryptoNoteProtocolHandler::handle_notify_new_lite_block(int command, NOTIFY_NEW_LITE_BLOCK::request& arg, CryptoNoteConnectionContext& context) {
+  logger(Logging::TRACE) << context << "NOTIFY_NEW_LITE_BLOCK (hop " << arg.hop << ")";
+
+  updateObservedHeight(arg.current_blockchain_height, context);
+
+  context.m_remote_blockchain_height = arg.current_blockchain_height;
+
+  if (context.m_state != CryptoNoteConnectionContext::state_normal) {
+    return 1;
+  }
+  
+  Block blockHeader;
+  if(!fromBinaryArray(blockHeader, arg.blockHeader)) { // deserialize blockHeader
+    logger(Logging::WARNING) << context << "Deserialization of block header failed, dropping connection" ;
+    context.m_state = CryptoNoteConnectionContext::state_shutdown;
+    return 1;
+  }
+  
+  // find which transactions we have and which ones we need
+  std::vector<Transaction> have_txs;
+  std::vector<Crypto::Hash> need_txs;
+  
+  for (const auto transactionHash: blockHeader.transactionHashes) {
+    const auto [found, transaction] = m_core.getPoolTransaction(transactionHash);
+    if (found) {
+      have_txs.push_back(transaction);
+    }
+    else {
+      need_txs.push_back(transactionHash);
+    }
+  }
+
+  return 1;
+}
 
 void CryptoNoteProtocolHandler::relay_block(NOTIFY_NEW_BLOCK::request& arg) {
   auto buf = LevinProtocol::encode(arg);

@@ -197,4 +197,41 @@ namespace CryptoNote
     const static int ID = BC_COMMANDS_POOL_BASE + 8;
     typedef NOTIFY_REQUEST_TX_POOL_request request;
   };
+  
+  /************************************************************************/
+  /*                                                                      */
+  /************************************************************************/
+  struct NOTIFY_NEW_LITE_BLOCK_request {
+    BinaryArray blockHeader;
+    uint32_t current_blockchain_height;
+    uint32_t hop;
+    
+    void serialize(ISerializer& s) {
+      KV_MEMBER(blockHeader)
+      KV_MEMBER(current_blockchain_height)
+      KV_MEMBER(hop)
+    }
+  };
+
+  struct NOTIFY_NEW_LITE_BLOCK {
+    const static int ID = BC_COMMANDS_POOL_BASE + 9;
+    typedef NOTIFY_NEW_LITE_BLOCK_request request;
+  };
+
+  struct NOTIFY_MISSING_TXS_request {
+    Crypto::Hash blockHash;
+    uint32_t current_blockchain_height;
+    std::vector<Crypto::Hash> missing_txs;
+    
+    void serialize(ISerializer& s) {
+      KV_MEMBER(blockHash)
+      KV_MEMBER(current_blockchain_height)
+      KV_MEMBER(missing_txs)
+    }
+  };
+
+  struct NOTIFY_MISSING_TXS {
+    const static int ID = BC_COMMANDS_POOL_BASE + 10;
+    typedef NOTIFY_MISSING_TXS_request request;
+  };
 }
