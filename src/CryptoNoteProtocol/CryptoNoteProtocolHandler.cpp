@@ -621,7 +621,7 @@ int CryptoNoteProtocolHandler::handle_notify_new_lite_block(int command, NOTIFY_
     return 1;
   }
   
-  Block blockHeader;
+  Block blockHeader; // name slightly misleading. The Block struct does not contain full transactions, only hashes
   if(!fromBinaryArray(blockHeader, arg.blockHeader)) { // deserialize blockHeader
     logger(Logging::WARNING) << context << "Deserialization of block header failed, dropping connection" ;
     context.m_state = CryptoNoteConnectionContext::state_shutdown;
@@ -639,6 +639,31 @@ int CryptoNoteProtocolHandler::handle_notify_new_lite_block(int command, NOTIFY_
     }
     else {
       need_txs.push_back(transactionHash);
+    }
+  }
+  
+  if(need_txs.empty())
+  {
+    block_verification_context bvc = boost::value_initialized<block_verification_context>();
+    m_core.handle_incoming_block(blockHeader, bvc, true, false);
+    if (bvc.m_verification_failed) {
+      logger(Logging::DEBUGGING) << context << "Block verification failed, dropping connection";
+      context.m_state = CryptoNoteConnectionContext::state_shutdown;
+      return 1;
+    }
+    if (bvc.m_added_to_main_chain) {
+      ++arg.hop;
+      relay_post_notify<NOTIFY_NEW_LITE_BLOCK>(*m_p2p, arg, &context.m_connection_id);
+      if (bvc.m_switched_to_alt_chain) {
+        requestMissingPoolTransactions(context);
+      }
+    } 
+    else if (bvc.m_marked_as_orphaned) {
+      context.m_state = CryptoNoteConnectionContext::state_synchronizing;
+      NOTIFY_REQUEST_CHAIN::request r = boost::value_initialized<NOTIFY_REQUEST_CHAIN::request>();
+      r.block_ids = m_core.buildSparseChain();
+      logger(Logging::TRACE) << context << "-->>NOTIFY_REQUEST_CHAIN: m_block_ids.size()=" << r.block_ids.size();
+      post_notify<NOTIFY_REQUEST_CHAIN>(*m_p2p, r, context);
     }
   }
 
