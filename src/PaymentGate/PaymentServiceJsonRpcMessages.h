@@ -404,4 +404,36 @@ struct SendFusionTransaction {
   };
 };
 
+struct MakeDeposit {
+  struct Request {
+    uint32_t term;
+    uint64_t amount;
+    uint64_t fee;
+    uint64_t mixIn;
+
+    void serialize(CryptoNote::ISerializer& serializer);
+  };
+
+  struct Response {
+    std::string txId;
+
+    void serialize(CryptoNote::ISerializer& serializer);
+  };
+};
+
+struct WithdrawDeposits {
+  struct Request {
+    std::vector<size_t> depositIds;
+    uint64_t fee;
+
+    void serialize(CryptoNote::ISerializer& serializer);
+  };
+
+  struct Response {
+    std::string txId;
+
+    void serialize(CryptoNote::ISerializer& serializer);
+  };
+};
+
 } //namespace PaymentService

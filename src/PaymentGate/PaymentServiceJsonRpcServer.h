@@ -82,6 +82,8 @@ private:
   std::error_code handleGetMessagesFromExtra(const GetMessagesFromExtra::Request& request, GetMessagesFromExtra::Response& response);
   std::error_code handleEstimateFusion(const EstimateFusion::Request& request, EstimateFusion::Response& response);
   std::error_code handleSendFusionTransaction(const SendFusionTransaction::Request& request, SendFusionTransaction::Response& response);
+  std::error_code handleMakeDeposit(const MakeDeposit::Request& request, MakeDeposit::Response& response);
+  std::error_code handleWithdrawDeposits(const WithdrawDeposits::Request& request, WithdrawDeposits::Response& response);
 };
 
 }//namespace PaymentService

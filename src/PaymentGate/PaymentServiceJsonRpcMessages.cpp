@@ -344,4 +344,41 @@ void SendFusionTransaction::Response::serialize(CryptoNote::ISerializer& seriali
   serializer(transactionHash, "transactionHash");
 }
 
+void MakeDeposit::Request::serialize(CryptoNote::ISerializer& serializer) {
+  if (!serializer(term, "term")) {
+    throw RequestSerializationError();
+  }
+  
+  if (!serializer(amount, "amount")) {
+    throw RequestSerializationError();
+  }
+  
+  if (!serializer(fee, "fee")) {
+    throw RequestSerializationError();
+  }
+  
+  if (!serializer(mixIn, "mixIn")) {
+    throw RequestSerializationError();
+  }
+}
+
+void MakeDeposit::Response::serialize(CryptoNote::ISerializer& serializer) {
+  serializer(txId, "txId");
+}
+
+void WithdrawDeposits::Request::serialize(CryptoNote::ISerializer& serializer) {
+  if (!serializer(depositIds, "depositIds")) {
+    throw RequestSerializationError();
+  }
+  
+  if (!serializer(fee, "fee")) {
+    throw RequestSerializationError();
+  }
+}
+
+void WithdrawDeposits::Response::serialize(CryptoNote::ISerializer& serializer) {
+  serializer(txId, "txId");
+}
+
+
 }

@@ -21,6 +21,7 @@
 #include "PaymentGate/WalletFactory.h"
 #include <System/Context.h>
 #include "Wallet/WalletGreen.h"
+#include "WalletLegacy/WalletLegacy.h"
 
 #ifdef ERROR
 #undef ERROR
@@ -224,8 +225,9 @@ void PaymentGateService::runWalletService(const CryptoNote::Currency& currency, 
   };
 
   std::unique_ptr<CryptoNote::WalletGreen> wallet(new CryptoNote::WalletGreen(*dispatcher, currency, node));
+  std::unique_ptr<CryptoNote::WalletLegacy> walletLegacy(new CryptoNote::WalletLegacy(currency, node));
 
-  service = new PaymentService::WalletService(currency, *dispatcher, node, *wallet, *wallet, walletConfiguration, logger);
+  service = new PaymentService::WalletService(currency, *dispatcher, node, *wallet, *wallet, walletConfiguration, logger, *walletLegacy);
   std::unique_ptr<PaymentService::WalletService> serviceGuard(service);
   try {
     service->init();

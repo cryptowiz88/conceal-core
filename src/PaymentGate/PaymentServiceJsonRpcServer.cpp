@@ -59,6 +59,8 @@ PaymentServiceJsonRpcServer::PaymentServiceJsonRpcServer(System::Dispatcher& sys
   handlers.emplace("getMessagesFromExtra", jsonHandler<GetMessagesFromExtra::Request, GetMessagesFromExtra::Response>(std::bind(&PaymentServiceJsonRpcServer::handleGetMessagesFromExtra, this, std::placeholders::_1, std::placeholders::_2)));
   handlers.emplace("estimateFusion", jsonHandler<EstimateFusion::Request, EstimateFusion::Response>(std::bind(&PaymentServiceJsonRpcServer::handleEstimateFusion, this, std::placeholders::_1, std::placeholders::_2)));
   handlers.emplace("sendFusionTransaction", jsonHandler<SendFusionTransaction::Request, SendFusionTransaction::Response>(std::bind(&PaymentServiceJsonRpcServer::handleSendFusionTransaction, this, std::placeholders::_1, std::placeholders::_2)));
+  handlers.emplace("makeDeposit", jsonHandler<MakeDeposit::Request, MakeDeposit::Response>(std::bind(&PaymentServiceJsonRpcServer::handleMakeDeposit, this, std::placeholders::_1, std::placeholders::_2)));
+  handlers.emplace("withdrawDeposits", jsonHandler<WithdrawDeposits::Request, WithdrawDeposits::Response>(std::bind(&PaymentServiceJsonRpcServer::handleWithdrawDeposits, this, std::placeholders::_1, std::placeholders::_2)));
 }
 
 void PaymentServiceJsonRpcServer::processJsonRpcRequest(const Common::JsonValue& req, Common::JsonValue& resp) {
@@ -220,6 +222,14 @@ std::error_code PaymentServiceJsonRpcServer::handleEstimateFusion(const Estimate
 
 std::error_code PaymentServiceJsonRpcServer::handleSendFusionTransaction(const SendFusionTransaction::Request& request, SendFusionTransaction::Response& response) {
   return service.sendFusionTransaction(request.threshold, request.anonymity, request.addresses, request.destinationAddress, response.transactionHash);
+}
+
+std::error_code PaymentServiceJsonRpcServer::handleMakeDeposit(const MakeDeposit::Request& request, MakeDeposit::Response& response) {
+  return service.makeDeposit(request.term, request.amount, request.fee, request.mixIn, response.txId);
+}
+
+std::error_code PaymentServiceJsonRpcServer::handleWithdrawDeposits(const WithdrawDeposits::Request& request, WithdrawDeposits::Response& response) {
+  return service.withdrawDeposits(request.depositIds, request.fee, response.txId);
 }
 
 }

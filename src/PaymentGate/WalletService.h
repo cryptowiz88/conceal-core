@@ -10,6 +10,7 @@
 #include <System/Dispatcher.h>
 #include <System/Event.h>
 #include "IWallet.h"
+#include "IWalletLegacy.h"
 #include "INode.h"
 #include "CryptoNoteCore/Currency.h"
 #include "PaymentServiceJsonRpcMessages.h"
@@ -39,7 +40,7 @@ struct TransactionsInBlockInfoFilter;
 
 class WalletService {
 public:
-  WalletService(const CryptoNote::Currency& currency, System::Dispatcher& sys, CryptoNote::INode& node, CryptoNote::IWallet& wallet, CryptoNote::IFusionManager& fusionManager, const WalletConfiguration& conf, Logging::ILogger& logger);
+  WalletService(const CryptoNote::Currency& currency, System::Dispatcher& sys, CryptoNote::INode& node, CryptoNote::IWallet& wallet, CryptoNote::IFusionManager& fusionManager, const WalletConfiguration& conf, Logging::ILogger& logger, CryptoNote::IWalletLegacy& walletLegacy);
   virtual ~WalletService();
 
   void init();
@@ -78,6 +79,8 @@ public:
   std::error_code estimateFusion(uint64_t threshold, const std::vector<std::string>& addresses, uint32_t& fusionReadyCount, uint32_t& totalOutputCount);
 std::error_code sendFusionTransaction(uint64_t threshold, uint32_t anonymity, const std::vector<std::string>& addresses,
     const std::string& destinationAddress, std::string& transactionHash);
+std::error_code makeDeposit(uint32_t term, uint64_t amount, uint64_t fee, uint64_t mixIn, std::string& txId);
+std::error_code withdrawDeposits(const std::vector<CryptoNote::DepositId>& depositIds, uint64_t fee, std::string& txId);
   
 private:
   void refresh();
@@ -99,6 +102,7 @@ private:
 
   const CryptoNote::Currency& currency;
   CryptoNote::IWallet& wallet;
+  CryptoNote::IWalletLegacy& walletLegacy;
   CryptoNote::IFusionManager& fusionManager;
   CryptoNote::INode& node;
   const WalletConfiguration& config;

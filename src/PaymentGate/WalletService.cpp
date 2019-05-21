@@ -31,6 +31,7 @@
 #include "NodeFactory.h"
 
 #include "Wallet/WalletGreen.h"
+#include "WalletLegacy/WalletLegacy.h"
 #include "Wallet/LegacyKeysImporter.h"
 #include "Wallet/WalletErrors.h"
 #include "Wallet/WalletUtils.h"
@@ -445,9 +446,10 @@ void importLegacyKeys(const std::string &legacyKeysFile, const WalletConfigurati
 }
 
 WalletService::WalletService(const CryptoNote::Currency& currency, System::Dispatcher& sys, CryptoNote::INode& node,
-  CryptoNote::IWallet& wallet, CryptoNote::IFusionManager& fusionManager, const WalletConfiguration& conf, Logging::ILogger& logger) :
+  CryptoNote::IWallet& wallet, CryptoNote::IFusionManager& fusionManager, const WalletConfiguration& conf, Logging::ILogger& logger, CryptoNote::IWalletLegacy& walletLegacy) :
     currency(currency),
     wallet(wallet),
+    walletLegacy(walletLegacy),
     fusionManager(fusionManager),
     node(node),
     config(conf),
@@ -1234,6 +1236,40 @@ std::error_code WalletService::sendFusionTransaction(uint64_t threshold, uint32_
     return make_error_code(CryptoNote::error::INTERNAL_WALLET_ERROR);
   }
 
+  return std::error_code();
+}
+
+std::error_code WalletService::makeDeposit(uint32_t term, uint64_t amount, uint64_t fee, uint64_t mixIn, std::string& txId) {
+  try {
+    System::EventLock lk(readyEvent);
+    
+    CryptoNote::TransactionId tx = walletLegacy.deposit(term, amount, fee, mixIn);
+    txId = Common::podToHex(tx);
+  } catch (std::system_error& x) {
+    logger(Logging::WARNING, Logging::BRIGHT_YELLOW) << "Error while making a deposit: " << x.what();
+    return x.code();
+  } catch (std::exception& x) {
+    logger(Logging::WARNING, Logging::BRIGHT_YELLOW) << "Error while making a deposit: " << x.what();
+    return make_error_code(CryptoNote::error::INTERNAL_WALLET_ERROR);
+  }
+  
+  return std::error_code();
+}
+
+std::error_code WalletService::withdrawDeposits(const std::vector<CryptoNote::DepositId>& depositIds, uint64_t fee, std::string& txId) {
+  try {
+    System::EventLock lk(readyEvent);
+    
+    CryptoNote::TransactionId tx = walletLegacy.withdrawDeposits(depositIds, fee);
+    txId = Common::podToHex(tx);
+  } catch (std::system_error& x) {
+    logger(Logging::WARNING, Logging::BRIGHT_YELLOW) << "Error while withdrawing deposits: " << x.what();
+    return x.code();
+  } catch (std::exception& x) {
+    logger(Logging::WARNING, Logging::BRIGHT_YELLOW) << "Error while withdrawing deposits: " << x.what();
+    return make_error_code(CryptoNote::error::INTERNAL_WALLET_ERROR);
+  }
+  
   return std::error_code();
 }
 
